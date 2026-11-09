@@ -14,7 +14,9 @@ if(!gsap) throw new Error('GSAP failed to load (check your connection).');
 gsap.ticker.lagSmoothing(0);
 
 /* ───────────────────────── utils ───────────────────────── */
-const $ = s => document.querySelector(s);/* Happy Parcel — React Driver Dashboard (needs React 18 + ReactDOM loaded first) */
+const $ = s => document.querySelector(s);
+const rand = (a,b)=>a+Math.random()*(b-a);
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));/* Happy Parcel — React Driver Dashboard (needs React 18 + ReactDOM loaded first) */
 (function(){
 'use strict';
 var R=window.React, RD=window.ReactDOM, mountEl=document.getElementById('dashRoot'), modalEl=document.getElementById('hpModals');
@@ -280,8 +282,9 @@ RD.createRoot(mountEl).render(e(App));
 window.HPDash={ready:true}; window.__hpReady=true;
 })();
 
-const rand = (a,b)=>a+Math.random()*(b-a);
-const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+.DS_Store
+node_modules/
+
 const lerp = (a,b,t)=>a+(b-a)*t;
 const smooth = (x,a,b)=>{ const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
