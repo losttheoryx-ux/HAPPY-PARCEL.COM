@@ -1,4 +1,4 @@
-/* Happy Parcel — 3D story, login and dashboard hook-up (load with <script type="module">; needs the importmap for three + GSAP) */
+/* Happy Parcel — 3D story, login and dashboard hook-up (ES module; needs the importmap in index.html) */
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -14,8 +14,7 @@ if(!gsap) throw new Error('GSAP failed to load (check your connection).');
 gsap.ticker.lagSmoothing(0);
 
 /* ───────────────────────── utils ───────────────────────── */
-const $ = s => document.querySelector(s);
-const rand = (a,b)=>a+Math.random()*(b-a);/* Happy Parcel — React Driver Dashboard (classic script; needs React 18 + ReactDOM loaded first) */
+const $ = s => document.querySelector(s);/* Happy Parcel — React Driver Dashboard (needs React 18 + ReactDOM loaded first) */
 (function(){
 'use strict';
 var R=window.React, RD=window.ReactDOM, mountEl=document.getElementById('dashRoot'), modalEl=document.getElementById('hpModals');
@@ -281,6 +280,7 @@ RD.createRoot(mountEl).render(e(App));
 window.HPDash={ready:true}; window.__hpReady=true;
 })();
 
+const rand = (a,b)=>a+Math.random()*(b-a);
 const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
 const lerp = (a,b,t)=>a+(b-a)*t;
 const smooth = (x,a,b)=>{ const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
@@ -943,7 +943,7 @@ function updateFov(){
   const scl=renderer.domElement.height/(2*Math.tan(fov*Math.PI/360)); sparks.mat.uniforms.uScale.value=scl; dust.mat.uniforms.uScale.value=scl; gSparks.mat.uniforms.uScale.value=scl; gDust.mat.uniforms.uScale.value=scl;
 }
 function onResize(){ W=innerWidth; H=innerHeight; renderer.setSize(W,H); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W,H); camera.aspect=W/H; updateFov(); document.body.classList.toggle('compact',W<820||H>W*1.1); }
-let rzT=0; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(onResize,IS_TOUCH?220:60); }); onResize();
+let rzT=0, rzPend=false; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(typing()){ rzPend=true; return; } onResize(); },IS_TOUCH?220:60); }); onResize();
 let qPR=renderer.getPixelRatio(), qAcc=0, qN=0, qWarm=0;
 function adaptQuality(rdt){ if(++qWarm<90) return; qAcc+=rdt; if(++qN>=90){ const avg=qAcc/qN; qAcc=0; qN=0; if(avg>1/42&&qPR>1){ qPR=Math.max(1,qPR-.25); renderer.setPixelRatio(qPR); composer.setPixelRatio(qPR); composer.setSize(W,H); updateFov(); } } }
 
@@ -1062,7 +1062,7 @@ gsap.ticker.add((time)=>{
   storyT=storyDone?Math.min(TOTAL,storyT+dt):storyT+dt; liveT=storyT;
   updateChapters();
   skyMat.uniforms.uTime.value=time;
-  const steps=S.dashHide?0:Math.max(1,Math.ceil(dt/.034)), sdt=steps?dt/steps:0;
+  const steps=frozen()?0:Math.max(1,Math.ceil(dt/.034)), sdt=steps?dt/steps:0;
   for(let si=0;si<steps;si++){ const st=t-dt+sdt*(si+1);
   updatePlane(sdt,st); updateRain(sdt); updateParcels(sdt,st); updateScooter(sdt,st); updateMega(sdt,st);
   sparks.update(sdt); dust.update(sdt); updateRockets(sdt);
@@ -1083,8 +1083,8 @@ gsap.ticker.add((time)=>{
     appTf[0]=dx; appTf[1]=dy; appTf[2]=rt; appTf[3]=k2; app.style.transform=`translate(${dx}px,${dy}px) rotate(${rt}deg) scale(${k2})`; S.wasShake=true; }
   else { appTf[0]=appTf[1]=appTf[2]=0; appTf[3]=1; if(S.wasShake){ app.style.transform=''; S.wasShake=false; } }
   // login tilt
-  if(S.loginOn){ if(!tilt.hover){ tilt.tx=0; tilt.ty=0; } tilt.cx+=(tilt.tx-tilt.cx)*.1; tilt.cy+=(tilt.ty-tilt.cy)*.1; { const tf=`rotateX(${tilt.cx.toFixed(2)}deg) rotateY(${tilt.cy.toFixed(2)}deg)`; if(tf!==tilt.last){ tilt.last=tf; lc.style.transform=tf; } } }
-  if(!S.dashHide){ composer.render(); adaptQuality(rdt); if(viewMode==='live'&&(hist.length===0||storyT-lastRecT>=.033)) recordFrame(); }
+  if(S.loginOn&&(typing()||IS_TOUCH)){ if(lc.style.transform){ lc.style.transform=''; tilt.last=''; } } else if(S.loginOn){ if(!tilt.hover){ tilt.tx=0; tilt.ty=0; } tilt.cx+=(tilt.tx-tilt.cx)*.1; tilt.cy+=(tilt.ty-tilt.cy)*.1; { const tf=`rotateX(${tilt.cx.toFixed(2)}deg) rotateY(${tilt.cy.toFixed(2)}deg)`; if(tf!==tilt.last){ tilt.last=tf; lc.style.transform=tf; } } }
+  if(!frozen()){ composer.render(); adaptQuality(rdt); if(viewMode==='live'&&(hist.length===0||storyT-lastRecT>=.033)) recordFrame(); }
 });
 
 /* ───────────────────────── scroll / swipe input ───────────────────────── */
@@ -1096,7 +1096,13 @@ function updateChapters(){
   let k=-1; railBtns.forEach((b,i)=>{ if(storyT>=+b.dataset.t-.01) k=i; });
   if(k!==railOn){ railOn=k; railBtns.forEach((b,i)=>{ b.classList.toggle('on',i===k); b.classList.toggle('done',i<k); }); }
 }
-let cmW=0, cmH=0; const typing=()=>{ const a=document.activeElement; return !!a&&a.tagName==='INPUT'; };
+let cmW=0, cmH=0; let sH=innerHeight, sW=innerWidth, kbHold=0;
+const kbUp=()=>{ if(innerWidth!==sW){ sW=innerWidth; sH=innerHeight; } else if(innerHeight>sH) sH=innerHeight; return sH-innerHeight>120; };
+const frozen=()=>S.dashHide||(S.loginOn&&typing());
+const typing=()=>{ const a=document.activeElement; return (!!a&&a.tagName==='INPUT')||performance.now()<kbHold||kbUp(); };
+addEventListener('focusin',ev=>{ if(ev.target&&ev.target.tagName==='INPUT'){ $('#loginWrap').classList.add('kb'); setTimeout(()=>{ try{ const w=$('#loginWrap'),r=ev.target.getBoundingClientRect(),q=w.getBoundingClientRect(); w.scrollTop+=(r.top+r.height/2)-(q.top+q.height/2); }catch(x){} },350); } });
+addEventListener('focusout',()=>{ kbHold=performance.now()+900; setTimeout(()=>{ const a=document.activeElement; if(a&&a.tagName==='INPUT') return; if(kbUp()) return;
+  $('#loginWrap').classList.remove('kb'); try{ if(!S.dash) scrollTo(0,Math.round(pRaw*maxScroll)); }catch(x){} if(rzPend){ rzPend=false; onResize(); } fitLogin(); },1000); });
 const calcMax=(force)=>{ if(typing()&&!force) return; const w=innerWidth,h=innerHeight; if(force||w!==cmW||Math.abs(h-cmH)>=160){ cmW=w; cmH=h; maxScroll=Math.max(1,document.documentElement.scrollHeight-h); } };
 addEventListener('resize',()=>calcMax(),{passive:true}); calcMax(true);
 const stopAuto=()=>{ auto=false; };
@@ -1336,7 +1342,7 @@ lw.addEventListener('pointermove',e=>{ if(!S.loginOn) return; const r=lc.getBoun
   tilt.hover=true; tilt.tx=clamp(-py*5,-6,6); tilt.ty=clamp(px*6,-8,8); lc.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%'); lc.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%'); },{passive:true});
 lw.addEventListener('pointerleave',()=>{ tilt.hover=false; },{passive:true});
 const ICO={"phone": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5.2 3.5h3.6l1.9 4.7-2.3 1.5a11.2 11.2 0 0 0 5.4 5.4l1.5-2.3 4.7 1.9v3.6a1.9 1.9 0 0 1-2 1.9C10.5 19.6 4.4 13.5 3.3 5.5a1.9 1.9 0 0 1 1.9-2z\"/></svg>", "mail": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2.6\"/><path d=\"M3.8 7.4 12 13.2l8.2-5.8\"/></svg>", "eye": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "off": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M3.5 3.5l17 17\"/></svg>"};
-$('#eye').addEventListener('click',()=>{ const i=$('#password'), show=i.type==='password'; i.type=show?'text':'password'; $('#eye').innerHTML=show?ICO.off:ICO.eye; });
+$('#eye').addEventListener('click',()=>{ const i=$('#password'), show=!i.classList.contains('show'); i.classList.toggle('show',show); $('#eye').innerHTML=show?ICO.off:ICO.eye; });
 const idIn=$('#ident'), idF=$('#fId'), idIco=$('#idIco'), seg=$('#seg'), form=$('#loginForm'); let mode='login';
 const isEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), isPhone=v=>/^\+?\d{7,15}$/.test(v.replace(/[\s\-()]/g,''));
 function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
@@ -1344,7 +1350,7 @@ function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classLi
   $('#loginBtn .lbl').textContent=reg?'Create account':'Log in';
   $('#lcTitle').textContent=reg?'Create your account':'Welcome to Happy Parcel';
   $('#lcSub').textContent=reg?'Register with your phone number or email.':'Sign in to track every drop in real time.';
-  $('#password').autocomplete=reg?'new-password':'current-password';
+  $('#password').autocomplete='off';
   document.querySelectorAll('.field').forEach(f=>f.classList.remove('bad')); fitLogin(); }
 seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.m!==mode) setMode(b.dataset.m); });
 idIn.addEventListener('input',()=>{ idIco.innerHTML=/[a-z@]/i.test(idIn.value)?ICO.mail:ICO.phone; idF.classList.remove('bad'); });
@@ -1360,8 +1366,8 @@ form.addEventListener('submit',e=>{
 });
 /* ───────────────────────── login fit + driver dashboard ───────────────────────── */
 const loginFit=$('#loginFit'), dash=$('#dash');
-function fitLogin(){ const h=lc.offsetHeight||560, w=lc.offsetWidth||410; const k=Math.min(1,(innerHeight-24)/h,(innerWidth-16)/w); loginFit.style.transform=k<1?`scale(${k.toFixed(3)})`:''; }
-{ let ft=0; addEventListener('resize',()=>{ clearTimeout(ft); ft=setTimeout(fitLogin,250); },{passive:true}); }
+function fitLogin(){ const h=lc.offsetHeight||560, w=lc.offsetWidth||410; const vh=typing()?Math.max(innerHeight,sH):innerHeight; const k=Math.min(1,(vh-24)/h,(innerWidth-16)/w); loginFit.style.transform=k<1?`scale(${k.toFixed(3)})`:''; }
+{ let ft=0; addEventListener('resize',()=>{ clearTimeout(ft); ft=setTimeout(()=>{ if(!typing()) fitLogin(); },250); },{passive:true}); }
 function showDash(name){
   if(!window.__hpReady){ toast('Dashboard could not load (React CDN blocked). Check your connection and reload.'); return; }
   S.dash=true; document.documentElement.classList.add('dash-on');
