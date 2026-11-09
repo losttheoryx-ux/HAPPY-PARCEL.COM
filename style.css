@@ -1,4 +1,4 @@
-/* Happy Parcel — all styles (3D story, login, driver dashboard) */
+/* Happy Parcel — all page styles (3D story, login, driver dashboard) */
   html{-webkit-text-size-adjust:100%;scrollbar-width:thin;scrollbar-color:#ff7a2f #05070f;overscroll-behavior-y:none}
   html,body{margin:0;background:#000;overflow-x:hidden;font-family:'Inter',system-ui,sans-serif;color:#fff;-webkit-tap-highlight-color:transparent}
   #app{position:fixed;inset:0;overflow:hidden;transform-origin:50% 50%;will-change:transform}
@@ -42,11 +42,6 @@
   #loginWrap::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(8,10,24,.25),rgba(4,5,14,.72));opacity:0;transition:opacity 1.4s ease}
   #loginWrap.on::before{opacity:1}
   #loginWrap.on{pointer-events:auto;visibility:visible}
-  .pw{-webkit-text-security:disc;text-security:disc}.pw.show{-webkit-text-security:none;text-security:none}
-  #loginWrap.kb #loginScene{perspective:none;will-change:auto}
-  #loginWrap.kb #loginFit,#loginWrap.kb .login-card{will-change:auto}
-  #loginWrap.kb .login-card,#loginWrap.kb .field input,#loginWrap.kb .seg{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-  #loginWrap.kb{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   #loginFit{flex:none;transform-origin:50% 50%}
   #loginScene{position:relative;margin:auto;flex:none;transform-origin:50% 50%;perspective:1100px;opacity:0;will-change:transform,opacity}
   .login-card{position:relative;width:min(410px,92vw);border-radius:30px;padding:34px 30px 26px;transform-style:preserve-3d;will-change:transform;
