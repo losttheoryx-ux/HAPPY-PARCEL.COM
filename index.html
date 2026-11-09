@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-title" content="Happy Parcel">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual">
 <title>Happy Parcel — Cinematic Delivery Experience</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -633,6 +633,8 @@ function CallModal(p){
 /* ---------- app ---------- */
 function App(){
   var a=useState(load), parcels=a[0], setParcels=a[1], b=useState('all'), filter=b[0], setFilter=b[1], c=useState(false), open=c[0], setOpen=c[1], d=useState('Driver'), user=d[0], setUser=d[1], r=useState(0), replay=r[0], setReplay=r[1];
+  var ins=useState(null), inst=ins[0], setInst=ins[1];
+  useEffect(function(){ function bp(ev){ ev.preventDefault(); setInst(ev); } function ok(){ setInst(null); } window.addEventListener('beforeinstallprompt',bp); window.addEventListener('appinstalled',ok); return function(){ window.removeEventListener('beforeinstallprompt',bp); window.removeEventListener('appinstalled',ok); }; },[]);
   var m=useState(false), addOpen=m[0], setAdd=m[1], cl=useState(null), callAwb=cl[0], setCall=cl[1], t=useState(null), toast=t[0], setToast=t[1];
   useEffect(function(){
     function on(ev){ setUser((ev.detail&&ev.detail.name)||'Driver'); setFilter('all'); setOpen(true); setReplay(function(n){ return n+1; }); }
@@ -656,6 +658,7 @@ function App(){
     e('header',{className:'dhead'},
       e('div',{className:'dlogo'},e('svg',{viewBox:'0 0 48 40',width:30,height:25,role:'img','aria-label':'Happy Parcel logo',fill:'none',stroke:'#fff',strokeWidth:4.6,strokeLinecap:'round',strokeLinejoin:'round'},e('path',{d:'M10 8V32'}),e('path',{d:'M10 20H25'}),e('path',{d:'M25 8V32'}),e('path',{d:'M25 8H31.5a6.5 6.5 0 0 1 0 13H25'}))),
       e('div',{className:'dtitle'},e('small',null,'Driver Dashboard'),e('h1',null,'Hello, ',user)),
+      inst?e('button',{type:'button',className:'hp-out',onClick:function(){ inst.prompt(); setInst(null); }},Ic('plus',16),e('span',null,'Install app')):null,
       e('button',{type:'button',className:'hp-out',onClick:function(){ if(window.HPApp) window.HPApp.signOut(); }},Ic('out',16),e('span',null,'Sign out'))),
     e('div',{className:'hp-metrics'},
       e(Metric,{cls:'t',label:'📦 Total Parcels',v:parcels.length,replay:replay,sub:'On your route'}),
@@ -1765,37 +1768,15 @@ function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classLi
   document.querySelectorAll('.field').forEach(f=>f.classList.remove('bad')); fitLogin(); }
 seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.m!==mode) setMode(b.dataset.m); });
 idIn.addEventListener('input',()=>{ idIco.innerHTML=/[a-z@]/i.test(idIn.value)?ICO.mail:ICO.phone; idF.classList.remove('bad'); });
-/* ── Accounts (browser-only demo): register saves an account, login checks it ── */
-const USERS_KEY='hp_users';
-const normId=v=>isEmail(v)?v.toLowerCase():v.replace(/[\s\-()]/g,'');
-function getUsers(){ try{ return JSON.parse(localStorage.getItem(USERS_KEY))||{}; }catch(x){ return {}; } }
-function saveUsers(u){ try{ localStorage.setItem(USERS_KEY,JSON.stringify(u)); return true; }catch(x){ return false; } }
-async function hashPw(pw,salt){ const d=salt+':'+pw;
-  if(window.crypto&&crypto.subtle){ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
-  let h=5381; for(const ch of d) h=((h<<5)+h+ch.charCodeAt(0))>>>0; return 'x'+h.toString(16); }
-function fieldError(fieldId,errId,msg){ $('#'+errId).textContent=msg; $('#'+fieldId).classList.add('bad'); lc.classList.remove('shake'); void lc.offsetWidth; lc.classList.add('shake'); }
-form.addEventListener('submit',async e=>{
-  e.preventDefault(); $('#idErr').textContent='Enter a valid phone number or email.'; $('#passErr').textContent='Password must be at least 6 characters.'; const reg=mode==='register', id=idIn.value.trim(), pw=$('#password').value, nm0=$('#fullName').value.trim();
+form.addEventListener('submit',e=>{
+  e.preventDefault(); const reg=mode==='register', id=idIn.value.trim(), pw=$('#password').value, nm0=$('#fullName').value.trim();
   const okI=isEmail(id)||isPhone(id), okP=pw.length>=6, okN=!reg||nm0.length>=2, okC=!reg||$('#password2').value===pw;
   $('#fName').classList.toggle('bad',!okN); idF.classList.toggle('bad',!okI); $('#fPass').classList.toggle('bad',!okP); $('#fPass2').classList.toggle('bad',!okC);
   if(!(okN&&okI&&okP&&okC)){ lc.classList.remove('shake'); void lc.offsetWidth; lc.classList.add('shake'); return; }
   const b=$('#loginBtn'); b.classList.add('loading'); b.disabled=true;
-  try{
-    const key=normId(id), users=getUsers(); let name=null;
-    if(reg){
-      if(users[key]){ fieldError('fId','idErr','This account already exists. Tap Log in instead.'); }
-      else{ const salt=Math.random().toString(36).slice(2); users[key]={name:nm0,salt:salt,hash:await hashPw(pw,salt)};
-        if(saveUsers(users)) name=nm0; else fieldError('fId','idErr','Could not save the account (browser storage is blocked).'); }
-    }else{
-      const u=users[key];
-      if(!u) fieldError('fId','idErr','No account found. Tap Register to create one.');
-      else if(await hashPw(pw,u.salt)!==u.hash) fieldError('fPass','passErr','Wrong password. Please try again.');
-      else name=u.name;
-    }
-    await new Promise(r=>setTimeout(r,450));
-    if(name) showDash(name);
-  }catch(err){ toast('Something went wrong. Please try again.'); }
-  finally{ b.classList.remove('loading'); b.disabled=false; }
+  setTimeout(()=>{ b.classList.remove('loading'); b.disabled=false;
+    const pretty=isEmail(id)?id.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'••'+id.replace(/\D/g,'').slice(-4);
+    showDash(reg?nm0:(pretty||'Driver')); },850);
 });
 /* ───────────────────────── login fit + driver dashboard ───────────────────────── */
 const loginFit=$('#loginFit'), dash=$('#dash');
