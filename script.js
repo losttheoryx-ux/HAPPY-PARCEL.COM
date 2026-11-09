@@ -12,10 +12,273 @@ const gsap = window.gsap;
 if(!gsap) throw new Error('GSAP failed to load (check your connection).');
 gsap.ticker.lagSmoothing(0);
 
-/* ───────────────────────── utils ───────────────────────── */
+/* ───────────────────────── utils ───────────────────────── */setTimeout(function(){ var l=document.getElementById('loader'); if(l && !window.__swiftBooted){ l.style.display='none'; var e=document.getElementById('err'); e.style.display='grid';
+  document.getElementById('errMsg').textContent='The 3D libraries (Three.js / GSAP) could not be downloaded. Check your internet connection or ad-blocker, then reload. This page loads them from cdn.jsdelivr.net and cdnjs.cloudflare.com.'; } },15000);
+
 const $ = s => document.querySelector(s);
 const rand = (a,b)=>a+Math.random()*(b-a);
-const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));(function(){
+'use strict';
+var R=window.React, RD=window.ReactDOM, mountEl=document.getElementById('dashRoot'), modalEl=document.getElementById('hpModals');
+if(!R||!RD||!mountEl||!modalEl){ console.warn('[Happy Parcel] React could not be loaded — Driver Dashboard disabled.'); return; }
+var e=R.createElement, useState=R.useState, useEffect=R.useEffect, useRef=R.useRef, useMemo=R.useMemo, Fragment=R.Fragment;
+
+/* ---------- icons ---------- */
+var IC={
+ phone:['M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z'],
+ pin:['M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z','M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
+ nav:['M3 11 22 2l-9 19-2-8z'],
+ scan:['M3 7V5a2 2 0 0 1 2-2h2','M17 3h2a2 2 0 0 1 2 2v2','M21 17v2a2 2 0 0 1-2 2h-2','M7 21H5a2 2 0 0 1-2-2v-2','M7 12h10'],
+ kbd:['M3 6h18v12H3z','M7 10h.01','M11 10h.01','M15 10h.01','M7 14h10'],
+ plus:['M12 5v14','M5 12h14'],
+ x:['M18 6 6 18','M6 6l12 12'],
+ bag:['M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z','M3 6h18','M16 10a4 4 0 0 1-8 0'],
+ undo:['M3 7v6h6','M21 17a9 9 0 0 0-15-6.7L3 13'],
+ house:['M3 21V9l9-6 9 6v12','M8 21v-7h8v7'],
+ spk:['M11 5 6 9H2v6h4l5 4z','M15.5 8.5a5 5 0 0 1 0 7','M19 5a9 9 0 0 1 0 14'],
+ mute:['M11 5 6 9H2v6h4l5 4z','M22 9l-6 6','M16 9l6 6'],
+ check:['M20 6 9 17l-5-5'],
+ out:['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4','M16 17l5-5-5-5','M21 12H9'],
+ cam:['M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z','M12 10a4 4 0 1 0 0 8 4 4 0 0 0 0-8z']
+};
+function Ic(n,s){ return e('svg',{className:'hp-ic',width:s||18,height:s||18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true'},IC[n].map(function(d,i){ return e('path',{key:i,d:d}); })); }
+
+/* ---------- data ---------- */
+var KEY='hp_driver_parcels_v1';
+var SEED=[
+ {awb:'HP48210937',to:'Aarav Sharma',phone:'+91 90000 10001',addr:'B-42, Sector 21, Noida, Uttar Pradesh 201301',item:'Mobile accessories',st:'pending'},
+ {awb:'HP48210938',to:'Priya Verma',phone:'+91 90000 10002',addr:'12, Lajpat Nagar II, New Delhi 110024',item:'Kurta set',st:'pending'},
+ {awb:'HP48210941',to:'Rohit Gupta',phone:'+91 90000 10003',addr:'Plot 7, Vaishali, Ghaziabad, Uttar Pradesh 201010',item:'Bluetooth speaker',st:'pending'},
+ {awb:'HP48210944',to:'Sneha Iyer',phone:'+91 90000 10004',addr:'C-9, Janakpuri, New Delhi 110058',item:'Books (3)',st:'pending'},
+ {awb:'HP48210946',to:'Imran Khan',phone:'+91 90000 10005',addr:'H-15, Sector 62, Noida, Uttar Pradesh 201309',item:'Kitchen mixer',st:'pending'},
+ {awb:'HP48210929',to:'Neha Singh',phone:'+91 90000 10006',addr:'A-3, Rajouri Garden, New Delhi 110027',item:'Skincare box',st:'today'},
+ {awb:'HP48210931',to:'Vikram Joshi',phone:'+91 90000 10007',addr:'22, Indirapuram, Ghaziabad, Uttar Pradesh 201014',item:'Running shoes',st:'tomorrow'},
+ {awb:'HP48210925',to:'Anita Desai',phone:'+91 90000 10008',addr:'F-31, Preet Vihar, New Delhi 110092',item:'Table lamp',st:'cancelled'}
+];
+var DB={
+ HP48210951:{to:'Karan Malhotra',phone:'+91 90000 20011',addr:'D-18, Sector 15, Faridabad, Haryana 121007',item:'Laptop sleeve'},
+ HP48210962:{to:'Pooja Mehta',phone:'+91 90000 20012',addr:'45, Pitampura, New Delhi 110034',item:'Yoga mat'},
+ HP48210970:{to:'Sandeep Yadav',phone:'+91 90000 20013',addr:'Block E, Mayur Vihar I, New Delhi 110091',item:'Wall clock'},
+ HP48210984:{to:'Meera Nair',phone:'+91 90000 20014',addr:'9, Sector 50, Gurugram, Haryana 122018',item:'Headphones'}
+};
+var FN=['Ankit','Divya','Manish','Ritu','Sahil','Kavita','Deepak','Isha','Tarun','Nisha'], LN=['Kumar','Tiwari','Bansal','Kapoor','Saxena','Chauhan','Mishra','Arora','Pandey','Rawat'];
+var ST_=['Sector 18, Noida','Karol Bagh, New Delhi','Rohini Sector 7, Delhi','Vasant Kunj, New Delhi','Sector 29, Gurugram','Kaushambi, Ghaziabad'], IT=['Phone cover','T-shirt','Water bottle','Earbuds','Backpack','Desk organiser','Gift box'];
+function hash(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function cleanAWB(r){ return String(r||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function lookupAWB(raw){
+  var awb=cleanAWB(raw); if(awb.length<6||awb.length>20) return null;
+  if(DB[awb]) return Object.assign({awb:awb},DB[awb]);
+  var h=hash(awb), pk=function(a,sh){ return a[(h>>>sh)%a.length]; }, n=String(h%1e9).padStart(9,'0');
+  return {awb:awb,to:pk(FN,0)+' '+pk(LN,5),phone:'+91 9'+n.slice(0,4)+' '+n.slice(4,9),addr:(1+h%98)+', '+pk(ST_,3),item:pk(IT,9)};
+}
+function load(){ try{ var s=localStorage.getItem(KEY); if(s){ var a=JSON.parse(s); if(Array.isArray(a)&&a.length) return a; } }catch(x){} return SEED.map(function(p){ return Object.assign({},p); }); }
+var LABEL={pending:'Pending',today:'Deliver Today',tomorrow:'Tomorrow',cancelled:'Cancelled'}, EMO={pending:'⬜',today:'🟩',tomorrow:'🟨',cancelled:'🟥'};
+var KEYST={1:'today',2:'tomorrow',3:'cancelled'};
+function mapsUrl(a){ return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a)+'&travelmode=driving'; }
+function useEsc(fn){ useEffect(function(){ function k(ev){ if(ev.key==='Escape') fn(); } window.addEventListener('keydown',k); return function(){ window.removeEventListener('keydown',k); }; }); }
+
+/* ---------- small pieces ---------- */
+function Num(p){
+  var s=useState(0), val=s[0], setVal=s[1], last=useRef({r:-1,v:0});
+  useEffect(function(){
+    var from=last.current.r===p.replay?last.current.v:0, to=p.v; last.current={r:p.replay,v:to};
+    if(from===to){ setVal(to); return; }
+    var t0=performance.now(), raf; function f(now){ var k=Math.min(1,(now-t0)/700); setVal(Math.round(from+(to-from)*(1-Math.pow(1-k,3)))); if(k<1) raf=requestAnimationFrame(f); }
+    raf=requestAnimationFrame(f); return function(){ cancelAnimationFrame(raf); };
+  },[p.v,p.replay]);
+  return val;
+}
+function Metric(p){ return e('div',{className:'hp-m '+p.cls},e('div',{className:'lab'},p.label),e('b',null,e(Num,{v:p.v,replay:p.replay})),e('small',null,p.sub)); }
+
+function Card(p){
+  var x=p.p, st=x.st;
+  var body=[
+    e('div',{className:'hp-ch',key:'h'},e('span',{className:'hp-awb'},x.awb),e('span',{className:'hp-chip'},EMO[st]+' '+LABEL[st])),
+    e('h3',{key:'n'},x.to),
+    e('p',{key:'i'},Ic('bag',15),x.item),
+    e('p',{key:'a'},Ic('pin',15),x.addr),
+    e('p',{key:'p'},Ic('phone',15),x.phone)
+  ];
+  if(st==='tomorrow') body.push(e('div',{className:'hp-note',key:'note'},Ic('bag',18),e('div',null,'Keep in Bag',e('small',null,'Rescheduled for tomorrow — do not load it on today’s route.'))));
+  if(st==='cancelled') body.push(e('div',{className:'hp-note',key:'note'},Ic('house',18),e('div',null,'Return to Warehouse',e('small',null,'Order cancelled by customer. No OTP needed.'))));
+  var act=[];
+  if(st==='pending') act.push(e('button',{key:'c',type:'button',className:'hp-btn pri',onClick:function(){ p.onCall(x.awb); }},Ic('phone',17),'AI Call'));
+  if(st==='today') act.push(e('a',{key:'m',className:'hp-btn map',href:mapsUrl(x.addr),target:'_blank',rel:'noopener noreferrer'},Ic('nav',17),'Open in Google Maps'));
+  if(st!=='pending') act.push(e('button',{key:'u',type:'button',className:'hp-btn sm','aria-label':'Reset to pending',title:'Reset to pending',onClick:function(){ p.onReset(x.awb); }},Ic('undo',17)));
+  body.push(e('div',{className:'hp-act',key:'act'},act));
+  return e('article',{className:'hp-card '+st,'data-awb':x.awb},body);
+}
+
+/* ---------- add parcel ---------- */
+function Found(p){
+  var d=p.d, dup=p.exists(d.awb);
+  return e('div',{className:'hp-res'},e('h4',null,'Details found'),
+    e('dl',null,e('dt',null,'AWB'),e('dd',null,d.awb),e('dt',null,'Name'),e('dd',null,d.to),e('dt',null,'Phone'),e('dd',null,d.phone),e('dt',null,'Address'),e('dd',null,d.addr),e('dt',null,'Item'),e('dd',null,d.item)),
+    e('div',{className:'hp-btnrow'},e('button',{type:'button',className:'hp-btn pri',disabled:dup,onClick:function(){ if(p.onAdd(d)) p.onClose(); }},Ic(dup?'check':'plus',17),dup?'Already in your list':'Add to my parcels')));
+}
+function Scanner(p){
+  var a=useState('idle'), ph=a[0], setPh=a[1], b=useState(null), data=b[0], setData=b[1], c=useState(0), nLines=c[0], setN=c[1];
+  var d=useState(null), stream=d[0], setStream=d[1], er=useState(''), err=er[0], setErr=er[1];
+  var vref=useRef(null), tm=useRef([]), done=useRef(false);
+  useEffect(function(){ return function(){ tm.current.forEach(clearTimeout); }; },[]);
+  function reveal(dd){ done.current=true; setData(dd); setPh('scanning'); setN(0); [1,2,3,4].forEach(function(i){ tm.current.push(setTimeout(function(){ setN(i); if(i===4) setPh('found'); },i*480)); }); }
+  function simulate(){
+    tm.current.forEach(clearTimeout); tm.current=[];
+    var keys=Object.keys(DB).filter(function(k){ return !p.exists(k); }), awb=keys.length?keys[0]:'HP'+(48300000+Math.floor(Math.random()*90000));
+    reveal(lookupAWB(awb));
+  }
+  function startCam(){
+    setErr('');
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ setErr('Camera is not available in this browser — use “Simulate scan” or type the AWB.'); return; }
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(setStream).catch(function(){ setErr('Camera permission was blocked — use “Simulate scan” or type the AWB.'); });
+  }
+  useEffect(function(){
+    if(!stream) return; var v=vref.current, iv=0;
+    if(v){ v.srcObject=stream; var pr=v.play(); if(pr&&pr.catch) pr.catch(function(){}); }
+    if('BarcodeDetector' in window){
+      try{ var det=new window.BarcodeDetector({formats:['code_128','code_39','ean_13','qr_code']});
+        iv=setInterval(function(){ if(done.current||!v) return; det.detect(v).then(function(r){ if(r&&r[0]&&r[0].rawValue){ var dd=lookupAWB(r[0].rawValue); if(dd) reveal(dd); else p.say('Barcode read, but it is not a valid AWB'); } }).catch(function(){}); },700);
+      }catch(x){ setErr('Live barcode decoding is not supported here — use “Simulate scan”.'); }
+    } else setErr('Live barcode decoding is not supported in this browser — use “Simulate scan” or type the AWB.');
+    return function(){ clearInterval(iv); stream.getTracks().forEach(function(t){ t.stop(); }); };
+  },[stream]);
+  var lines=data?[['AWB',data.awb],['Name',data.to],['Phone',data.phone],['Address',data.addr]]:[];
+  return e('div',null,
+    e('div',{className:'hp-cam'+(ph==='idle'&&!stream?' idle':'')},
+      stream?e('video',{ref:vref,muted:true,playsInline:true}):e('div',{className:'hp-lbl'},e('b',null,'HAPPY PARCEL'),'TO: ••••••••••',e('br'),'AWB: HP4821•••••',e('div',{className:'bc'})),
+      e('i',{className:'cn a'}),e('i',{className:'cn b'}),e('i',{className:'cn c'}),e('i',{className:'cn d'}),e('i',{className:'ln'})),
+    ph!=='found'?e('div',{className:'hp-ocr'},lines.slice(0,nLines).map(function(l){ return e('div',{key:l[0]},e('span',null,l[0]),l[1]); })):null,
+    ph==='scanning'?e('div',{className:'hp-wait'},e('i',{className:'hp-spin'}),'Reading label…'):null,
+    err?e('p',{className:'hp-hint'},err):null,
+    ph==='found'&&data?e(Found,{d:data,exists:p.exists,onAdd:p.onAdd,onClose:p.onClose}):
+      e('div',{className:'hp-btnrow'},e('button',{type:'button',className:'hp-btn pri',onClick:simulate,disabled:ph==='scanning'},Ic('scan',17),'Simulate scan'),
+        e('button',{type:'button',className:'hp-btn',onClick:stream?function(){ setStream(null); }:startCam},Ic('cam',17),stream?'Stop camera':'Use camera')),
+    ph!=='found'?e('p',{className:'hp-hint'},'Point the camera at the shipping label barcode. Label damaged or camera broken? Switch to “Enter AWB”.'):null);
+}
+function Manual(p){
+  var a=useState(''), v=a[0], setV=a[1], b=useState('idle'), st=b[0], setSt=b[1], c=useState(null), data=c[0], setData=c[1];
+  useEffect(function(){
+    var cl=cleanAWB(v); setData(null);
+    if(!cl){ setSt('idle'); return; } if(cl.length<6){ setSt('short'); return; }
+    setSt('loading'); var id=setTimeout(function(){ var d=lookupAWB(cl); setData(d); setSt(d?'ok':'bad'); },650);
+    return function(){ clearTimeout(id); };
+  },[v]);
+  return e('div',null,
+    e('input',{className:'hp-in',value:v,onChange:function(ev){ setV(ev.target.value); },placeholder:'Type AWB / tracking no.',maxLength:24,autoCapitalize:'characters',autoComplete:'off',autoCorrect:'off',spellCheck:false,'aria-label':'AWB or tracking number'}),
+    e('div',{className:'hp-chips'},'Try:',Object.keys(DB).slice(0,2).map(function(k){ return e('button',{key:k,type:'button',onClick:function(){ setV(k); }},k); })),
+    st==='short'?e('p',{className:'hp-hint'},'Keep typing — AWB numbers are at least 6 characters.'):null,
+    st==='loading'?e('div',{className:'hp-wait'},e('i',{className:'hp-spin'}),'Fetching customer details…'):null,
+    st==='bad'?e('p',{className:'hp-bad'},'No parcel found for that number.'):null,
+    st==='ok'&&data?e(Found,{d:data,exists:p.exists,onAdd:p.onAdd,onClose:p.onClose}):null);
+}
+function AddSheet(p){
+  var m=useState('scan'), mode=m[0], setMode=m[1]; useEsc(p.onClose);
+  return e('div',{className:'hp-back',onClick:function(ev){ if(ev.target===ev.currentTarget) p.onClose(); }},
+    e('div',{className:'hp-sheet',role:'dialog','aria-modal':'true','aria-label':'Add parcel'},
+      e('div',{className:'hp-sh'},e('h2',null,'Add parcel'),e('button',{type:'button',className:'hp-x','aria-label':'Close',onClick:p.onClose},Ic('x',18))),
+      e('div',{className:'hp-seg'},e('button',{type:'button',className:mode==='scan'?'on':'',onClick:function(){ setMode('scan'); }},Ic('scan',16),'Scan label'),e('button',{type:'button',className:mode==='manual'?'on':'',onClick:function(){ setMode('manual'); }},Ic('kbd',16),'Enter AWB')),
+      mode==='scan'?e(Scanner,p):e(Manual,p)));
+}
+
+/* ---------- AI IVR call ---------- */
+function script(x){ var f=x.to.split(' ')[0]; return [
+ {hi:'नमस्ते '+f+' जी, मैं Happy Parcel की AI असिस्टेंट बोल रही हूँ।',en:'Hello '+f+', this is the Happy Parcel AI assistant.'},
+ {hi:'आपका पार्सल ('+x.item+') डिलीवरी के लिए तैयार है।',en:'Your parcel ('+x.item+') is ready for delivery.'},
+ {hi:'आज डिलीवरी के लिए 1 दबाएँ। कल के लिए 2 दबाएँ। ऑर्डर रद्द करने के लिए 3 दबाएँ।',en:'Press 1 for delivery today, 2 for tomorrow, 3 to cancel the order.'}]; }
+var REPLY={1:{hi:'धन्यवाद! आपका पार्सल आज ही डिलीवर किया जाएगा। कृपया घर पर रहें।',en:'Thank you! Your parcel will be delivered today. Please be available.'},
+ 2:{hi:'ठीक है, आपका पार्सल कल डिलीवर किया जाएगा।',en:'Okay, your parcel will be delivered tomorrow.'},
+ 3:{hi:'आपका ऑर्डर रद्द कर दिया गया है। पार्सल वेयरहाउस वापस भेजा जाएगा।',en:'Your order has been cancelled. The parcel will go back to the warehouse.'}};
+var PHASE={dialing:'Dialing…',ringing:'Ringing…',connected:'Connected',menu:'Waiting for keypress',done:'Call ended'};
+function speak(t){ try{ if(!('speechSynthesis' in window)) return; speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='hi-IN'; u.rate=.95; var v=(speechSynthesis.getVoices()||[]).filter(function(o){ return /^hi/i.test(o.lang); })[0]; if(v) u.voice=v; speechSynthesis.speak(u); }catch(x){} }
+function CallModal(p){
+  var x=p.parcel, S=useMemo(function(){ return script(x); },[x.awb]);
+  var a=useState('dialing'), ph=a[0], setPh=a[1], b=useState([]), typed=b[0], setTyped=b[1], c=useState(0), li=c[0], setLi=c[1], d=useState(0), sec=d[0], setSec=d[1], o=useState(true), snd=o[0], setSnd=o[1], k=useState(0), key=k[0], setKey=k[1];
+  var sref=useRef(true), trRef=useRef(null); sref.current=snd; useEffect(function(){ var t=trRef.current; if(t) t.scrollTop=t.scrollHeight; }); useEsc(function(){ p.onClose(); });
+  useEffect(function(){ var id; if(ph==='dialing') id=setTimeout(function(){ setPh('ringing'); },1300); else if(ph==='ringing') id=setTimeout(function(){ setPh('connected'); },1700); return function(){ clearTimeout(id); }; },[ph]);
+  useEffect(function(){
+    if(ph!=='connected') return; var dead=false, id;
+    function step(i,ci){ if(dead) return; if(i>=S.length){ setPh('menu'); return; } var t=S[i].hi; setLi(i);
+      if(ci===0&&sref.current) speak(t);
+      setTyped(S.slice(0,i).map(function(s){ return s.hi; }).concat(t.slice(0,ci)));
+      id=setTimeout(function(){ if(ci<t.length) step(i,ci+1); else step(i+1,0); }, ci<t.length?26:550); }
+    step(0,0); return function(){ dead=true; clearTimeout(id); };
+  },[ph==='connected']);
+  useEffect(function(){ if(ph!=='connected'&&ph!=='menu') return; var id=setInterval(function(){ setSec(function(s){ return s+1; }); },1000); return function(){ clearInterval(id); }; },[ph==='connected'||ph==='menu']);
+  useEffect(function(){ return function(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(x){} }; },[]);
+  var canPress=ph==='connected'||ph==='menu';
+  function press(n){ if(!canPress) return; setKey(n); setTyped(S.map(function(s){ return s.hi; })); setLi(S.length-1); setPh('done'); if(sref.current) speak(REPLY[n].hi); p.onResult(n); }
+  var mm=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+  var bubbles=typed.map(function(t,i){ return e('div',{className:'b',key:i},t); });
+  if(ph==='done') bubbles.push(e('div',{className:'b me',key:'me'},'दबाया: '+key),e('div',{className:'b',key:'r'},REPLY[key].hi));
+  var sub=ph==='done'?REPLY[key].en:(ph==='connected'||ph==='menu')?S[li].en:'';
+  var res=null;
+  if(ph==='done'){
+    var st=KEYST[key], col={1:'g',2:'y',3:'r'}[key];
+    res=e('div',{className:'hp-out2'},
+      key===1?e('div',{className:'hp-note',style:{'--c':'#22c55e'}},Ic('check',18),e('div',null,'Confirmed for Today',e('small',null,'Navigation unlocked for '+x.to+'.'))):
+      key===2?e('div',{className:'hp-note',style:{'--c':'#facc15'}},Ic('bag',18),e('div',null,'Rescheduled for Tomorrow — Keep in Bag',e('small',null,'Do not load this parcel on today’s route.'))):
+      e('div',{className:'hp-note',style:{'--c':'#ef4444'}},Ic('house',18),e('div',null,'Order Cancelled — Return to Warehouse',e('small',null,'Marked automatically. No OTP required.'))),
+      e('div',{className:'hp-btnrow'},key===1?e('a',{className:'hp-btn map',href:mapsUrl(x.addr),target:'_blank',rel:'noopener noreferrer'},Ic('nav',17),'Open in Google Maps'):null,e('button',{type:'button',className:'hp-btn',onClick:p.onClose},'Done')));
+  }
+  return e('div',{className:'hp-back',onClick:function(ev){ if(ev.target===ev.currentTarget&&ph==='done') p.onClose(); }},
+    e('div',{className:'hp-sheet hp-call',role:'dialog','aria-modal':'true','aria-label':'AI call'},
+      e('div',{className:'hp-sh'},e('span',{className:'hp-awb'},'AI IVR · '+x.awb),e('button',{type:'button',className:'hp-x','aria-label':snd?'Mute voice':'Unmute voice',onClick:function(){ setSnd(!snd); if(snd&&'speechSynthesis' in window) speechSynthesis.cancel(); }},Ic(snd?'spk':'mute',18))),
+      e('div',{className:'hp-av'+(ph==='dialing'||ph==='ringing'?' ring':'')},x.to.charAt(0)),
+      e('h3',null,x.to), e('div',{className:'st'},PHASE[ph]+(ph==='connected'||ph==='menu'?' · ':''),(ph==='connected'||ph==='menu')?e('b',null,mm):null),
+      e('div',{className:'hp-tr',ref:trRef,'aria-live':'polite'},bubbles,sub?e('div',{className:'en',key:'en'},sub):null),
+      e('div',{className:'hp-keys'},[[1,'आज','Today'],[2,'कल','Tomorrow'],[3,'रद्द','Cancel']].map(function(r){ return e('button',{key:r[0],type:'button',className:'hp-key k'+r[0]+(key===r[0]?' pick':''),disabled:!canPress,onClick:function(){ press(r[0]); },'aria-label':'Press '+r[0]+' — '+r[2]},e('b',null,r[0]),e('span',null,r[1]),e('small',null,r[2])); })),
+      res||e('div',{className:'hp-callbar'},e('button',{type:'button',className:'hp-btn end',onClick:function(){ p.say('Call ended — no response recorded'); p.onClose(); }},Ic('phone',17),'End call'))));
+}
+
+/* ---------- app ---------- */
+function App(){
+  var a=useState(load), parcels=a[0], setParcels=a[1], b=useState('all'), filter=b[0], setFilter=b[1], c=useState(false), open=c[0], setOpen=c[1], d=useState('Driver'), user=d[0], setUser=d[1], r=useState(0), replay=r[0], setReplay=r[1];
+  var m=useState(false), addOpen=m[0], setAdd=m[1], cl=useState(null), callAwb=cl[0], setCall=cl[1], t=useState(null), toast=t[0], setToast=t[1];
+  useEffect(function(){
+    function on(ev){ setUser((ev.detail&&ev.detail.name)||'Driver'); setFilter('all'); setOpen(true); setReplay(function(n){ return n+1; }); }
+    function off(){ setOpen(false); setAdd(false); setCall(null); setToast(null); }
+    window.addEventListener('hp-open',on); window.addEventListener('hp-close',off);
+    return function(){ window.removeEventListener('hp-open',on); window.removeEventListener('hp-close',off); };
+  },[]);
+  useEffect(function(){ try{ localStorage.setItem(KEY,JSON.stringify(parcels)); }catch(x){} },[parcels]);
+  useEffect(function(){ if(!toast) return; var id=setTimeout(function(){ setToast(null); },2800); return function(){ clearTimeout(id); }; },[toast]);
+  function say(msg){ setToast({m:msg,k:Date.now()}); }
+  function setStatus(awb,st){ setParcels(function(l){ return l.map(function(p){ return p.awb===awb?Object.assign({},p,{st:st}):p; }); }); }
+  function exists(awb){ return parcels.some(function(p){ return p.awb===awb; }); }
+  function addParcel(pp){ if(exists(pp.awb)){ say('That parcel is already in your list'); return false; } setParcels(function(l){ return [Object.assign({},pp,{st:'pending'})].concat(l); }); setFilter('all'); say('Parcel '+pp.awb+' added'); return true; }
+  var cnt=useMemo(function(){ var n={pending:0,today:0,tomorrow:0,cancelled:0}; parcels.forEach(function(p){ n[p.st]++; }); return n; },[parcels]);
+  var list=filter==='all'?parcels:parcels.filter(function(p){ return p.st===filter; });
+  var tabs=[['all','All',parcels.length],['today','Today',cnt.today],['tomorrow','Tomorrow',cnt.tomorrow],['cancelled','Cancelled',cnt.cancelled]];
+  var callP=callAwb&&parcels.filter(function(p){ return p.awb===callAwb; })[0];
+  var resolved=parcels.length?Math.round((parcels.length-cnt.pending)/parcels.length*100):0;
+  var anyModal=addOpen||!!callP;
+  var main=e('div',{className:'dwrap'},
+    e('header',{className:'dhead'},
+      e('div',{className:'dlogo'},e('svg',{viewBox:'0 0 48 40',width:30,height:25,role:'img','aria-label':'Happy Parcel logo',fill:'none',stroke:'#fff',strokeWidth:4.6,strokeLinecap:'round',strokeLinejoin:'round'},e('path',{d:'M10 8V32'}),e('path',{d:'M10 20H25'}),e('path',{d:'M25 8V32'}),e('path',{d:'M25 8H31.5a6.5 6.5 0 0 1 0 13H25'}))),
+      e('div',{className:'dtitle'},e('small',null,'Driver Dashboard'),e('h1',null,'Hello, ',user)),
+      e('button',{type:'button',className:'hp-out',onClick:function(){ if(window.HPApp) window.HPApp.signOut(); }},Ic('out',16),e('span',null,'Sign out'))),
+    e('div',{className:'hp-metrics'},
+      e(Metric,{cls:'t',label:'📦 Total Parcels',v:parcels.length,replay:replay,sub:'On your route'}),
+      e(Metric,{cls:'g',label:'🟩 Deliver Today',v:cnt.today,replay:replay,sub:'Confirmed by customer'}),
+      e(Metric,{cls:'y',label:'🟨 Tomorrow',v:cnt.tomorrow,replay:replay,sub:'Rescheduled'}),
+      e(Metric,{cls:'r',label:'🟥 Cancelled',v:cnt.cancelled,replay:replay,sub:'Return to warehouse'}),
+      e(Metric,{cls:'n',label:'⬜ Pending',v:cnt.pending,replay:replay,sub:'Awaiting AI call'})),
+    e('div',{className:'hp-prog'},e('span',null,resolved+'% resolved'),e('div',{className:'pbar'},e('i',{style:{width:resolved+'%'}})),e('span',null,(parcels.length-cnt.pending)+'/'+parcels.length)),
+    e('div',{className:'hp-tabs',role:'tablist'},tabs.map(function(tb){ return e('button',{key:tb[0],type:'button',role:'tab','aria-selected':filter===tb[0],className:'hp-tab'+(filter===tb[0]?' on':''),onClick:function(){ setFilter(tb[0]); }},tb[1],e('em',null,tb[2])); })),
+    list.length?e('div',{className:'hp-list'},list.map(function(p){ return e(Card,{key:p.awb,p:p,onCall:setCall,onReset:function(awb){ setStatus(awb,'pending'); say('Parcel reset to pending'); }}); }))
+      :e('div',{className:'hp-empty'},filter==='all'?'No parcels yet — tap “Add parcel” to scan one.':'No '+LABEL[filter].toLowerCase()+' parcels right now.'),
+    e('div',{className:'hp-foot'},'Demo data is saved on this device only. ',e('button',{type:'button',onClick:function(){ setParcels(SEED.map(function(p){ return Object.assign({},p); })); setFilter('all'); say('Demo data restored'); }},'Reset demo data')));
+  var layer=open?e(Fragment,null,
+    !anyModal?e('button',{key:'fab',type:'button',className:'hp-fab',onClick:function(){ setAdd(true); }},Ic('plus',20),'Add parcel'):null,
+    addOpen?e(AddSheet,{key:'add',onClose:function(){ setAdd(false); },onAdd:addParcel,exists:exists,say:say}):null,
+    callP?e(CallModal,{key:'call'+callP.awb,parcel:callP,say:say,onClose:function(){ setCall(null); },onResult:function(n){ setStatus(callP.awb,KEYST[n]); say(n===1?'Confirmed for Today — navigation unlocked':n===2?'Rescheduled for Tomorrow — keep in bag':'Cancelled — return to warehouse'); }}):null,
+    toast?e('div',{key:'t'+toast.k,className:'hp-toast',role:'status'},toast.m):null):null;
+  return e(Fragment,null,main,RD.createPortal(layer,modalEl));
+}
+RD.createRoot(mountEl).render(e(App));
+window.HPDash={ready:true}; window.__hpReady=true;
+})();
+
 const lerp = (a,b,t)=>a+(b-a)*t;
 const smooth = (x,a,b)=>{ const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
