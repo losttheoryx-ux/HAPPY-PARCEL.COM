@@ -354,9 +354,6 @@
   .login-card,.glass-bg,.field input,.btn-login,.seg{box-sizing:border-box}
   .login-card{max-width:calc(100vw - 24px)}
 
-  /* Skip intro button: jumps to the end of the story so the login card appears */
-  #skipIntro{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:45;padding:11px 20px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(10,14,24,.72);color:#fff;font:600 14px/1 system-ui,-apple-system,"Segoe UI",sans-serif;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer}
-  body:not(.cinema) #skipIntro{display:none}
 
   /* ═════════ NO BLUE ANYWHERE: focus rings, tap highlight, autofill, selection, checkbox ═════════ */
   *,*::before,*::after{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
@@ -392,6 +389,29 @@
 
   /* No white glow/spot following the finger or mouse: the pointer "glare" highlight is switched off */
   .glare,.login-card .glare,html.kbd .glare{display:none!important;opacity:0!important;background:none!important;mix-blend-mode:normal!important}
+
+  /* ── Touch devices: the login card is flat and static from the start (no 3D, no blur, no class changes on focus),
+        so the soft keyboard is never disturbed while typing ── */
+  html.touch #loginScene{perspective:none;will-change:auto}
+  html.touch #loginFit,html.touch .login-card{will-change:auto}
+  html.touch .login-card,html.touch .lc-inner{transform-style:flat;transform:none}
+  html.touch .lc-logo,html.touch .login-card h2,html.touch .login-card .sub,html.touch .field,html.touch .seg,html.touch .row,html.touch .btn-login,html.touch .divider,html.touch .socials,html.touch .foot{transform:none}
+  html.touch .btn-login:active{transform:scale(.98)}
+  html.touch #loginWrap *:not(.glass-bg),html.touch #loginWrap *::before,html.touch #loginWrap *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;mix-blend-mode:normal!important}
+  html.touch .glass-bg{background:linear-gradient(145deg,rgba(66,66,98,.86),rgba(34,35,62,.9));border-color:rgba(255,255,255,.28)}
+  html.touch .glare{display:none!important}
+  html.touch #loginWrap{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+  /* ═══ Transparent glass login card: no blue/purple fill ═══ */
+  #loginWrap::before{background:radial-gradient(ellipse at center,rgba(0,0,0,.12),rgba(0,0,0,.5))!important}
+  .login-card{background:transparent!important}
+  .glass-bg,html.touch .glass-bg,#loginWrap.kb .glass-bg{background:rgba(0,0,0,.2)!important;border:1px solid rgba(255,255,255,.3)!important;
+    backdrop-filter:blur(16px) saturate(1.1)!important;-webkit-backdrop-filter:blur(16px) saturate(1.1)!important;box-shadow:0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.25)!important}
+  /* keyboard open: blur stays off for stability, so use a slightly stronger neutral tint to keep text readable */
+  html.kbd .login-card,html.kbd .glass-bg,#loginWrap.kb .glass-bg{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  html.kbd .glass-bg,#loginWrap.kb .glass-bg{background:rgba(0,0,0,.34)!important}
+  .field input,.seg,html.kbd .field input,html.kbd .seg{background:rgba(0,0,0,.28)!important}
+  .field input:focus{background:rgba(0,0,0,.4)!important}
 </style>
 </head>
 <body class="bg-black text-white">
@@ -441,13 +461,13 @@
             </div>
             <div class="field" id="fPass">
               <span class="lead"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></svg></span>
-              <input id="password" class="pw" type="text" name="hp_secret" placeholder="Password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+              <input id="password" data-lpignore="true" data-1p-ignore="true" data-form-type="other" class="pw" type="text" name="hp_secret" placeholder="Password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
               <button type="button" class="eye" id="eye" aria-label="Show password"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
               <span class="err" id="passErr">Password must be at least 6 characters.</span>
             </div>
             <div class="field reg" id="fPass2">
               <span class="lead"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></svg></span>
-              <input id="password2" class="pw" type="text" name="hp_secret2" placeholder="Confirm password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+              <input id="password2" data-lpignore="true" data-1p-ignore="true" data-form-type="other" class="pw" type="text" name="hp_secret2" placeholder="Confirm password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
               <span class="err">Passwords do not match.</span>
             </div>
             <div class="row">
@@ -776,6 +796,7 @@ const lerp = (a,b,t)=>a+(b-a)*t;
 const smooth = (x,a,b)=>{ const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 const IS_TOUCH = matchMedia('(pointer:coarse)').matches;
+if(IS_TOUCH) document.documentElement.classList.add('touch');
 const app = $('#app');
 
 /* ───────────────────────── renderer / scene / camera ───────────────────────── */
@@ -1526,14 +1547,15 @@ function updateCamera(t){
 }
 let last=0;
 document.addEventListener('visibilitychange',()=>{ last=0; });
+let loginLock=false;   // once the login card has popped up the story is frozen: scrolling up no longer rewinds it
 gsap.ticker.add((time)=>{
   const rdt=Math.min(.05,time-last||.016); last=time;
   // ── page scroll -> story clock (scroll down plays, scroll up rewinds) ──
-  if(!typing()&&!S.dash){ const y=clamp(window.scrollY/maxScroll,0,1); if(Math.abs(y-pRaw)>1e-6){ pRaw=y; lastScrollT=performance.now(); } }
+  if(!typing()&&!S.dash&&!loginLock){ const y=clamp(window.scrollY/maxScroll,0,1); if(Math.abs(y-pRaw)>1e-6){ pRaw=y; lastScrollT=performance.now(); } }
   { const k=1-Math.exp(-9*rdt); pM+=(pRaw-pM)*k; pS+=(pM-pS)*k; if(Math.abs(pRaw-pS)<2e-6){ pS=pRaw; pM=pRaw; } }
   if(auto && ff===null && pRaw<.999) window.scrollTo(0,window.scrollY+maxScroll/TOTAL*rdt);
   const tgt=pS*TOTAL;
-  if(viewMode==='live'){ if(tgt<storyT-.03&&hist.length>2&&!typing()&&!S.dash) beginPlayback(); }
+  if(viewMode==='live'){ if(tgt<storyT-.03&&hist.length>2&&!typing()&&!S.dash&&!loginLock) beginPlayback(); }
   else if(tgt>=liveT-.004) endPlayback();
   if(viewMode==='play'){                       // scrolling UP: scrub the recorded story backwards (and forwards again)
     storyT=clamp(tgt,0,liveT); tsCur=0; tsPrev=0; tsNow=0; gsap.globalTimeline.timeScale(.00001);
@@ -1590,15 +1612,13 @@ let cmW=0, cmH=0; let sH=innerHeight, sW=innerWidth, kbHold=0;
 const kbUp=()=>{ if(innerWidth!==sW){ sW=innerWidth; sH=innerHeight; } else if(innerHeight>sH) sH=innerHeight; return sH-innerHeight>120; };
 const frozen=()=>S.dashHide||(S.loginOn&&typing());
 const typing=()=>{ const a=document.activeElement; return (!!a&&a.tagName==='INPUT')||performance.now()<kbHold||kbUp(); };
-addEventListener('focusin',ev=>{ if(ev.target&&ev.target.tagName==='INPUT'){ $('#loginWrap').classList.add('kb'); document.documentElement.classList.add('kbd'); setTimeout(()=>{ try{ const w=$('#loginWrap'),r=ev.target.getBoundingClientRect(),q=w.getBoundingClientRect(); w.scrollTop+=(r.top+r.height/2)-(q.top+q.height/2); }catch(x){} },350); } });
 addEventListener('focusout',()=>{ kbHold=performance.now()+900; setTimeout(()=>{ const a=document.activeElement; if(a&&a.tagName==='INPUT') return; if(kbUp()) return;
-  $('#loginWrap').classList.remove('kb'); document.documentElement.classList.remove('kbd'); try{ if(!S.dash) scrollTo(0,Math.round(pRaw*maxScroll)); }catch(x){} if(rzPend){ rzPend=false; onResize(); } fitLogin(); },1000); });
+  try{ if(!S.dash) scrollTo(0,Math.round(pRaw*maxScroll)); }catch(x){} if(rzPend){ rzPend=false; onResize(); } fitLogin(); },1000); });
 const calcMax=(force)=>{ if(typing()&&!force) return; const w=innerWidth,h=innerHeight; if(force||w!==cmW||Math.abs(h-cmH)>=160){ cmW=w; cmH=h; maxScroll=Math.max(1,document.documentElement.scrollHeight-h); } };
 addEventListener('resize',()=>calcMax(),{passive:true}); calcMax(true);
 const stopAuto=()=>{ auto=false; };
 addEventListener('wheel',stopAuto,{passive:true}); addEventListener('touchstart',stopAuto,{passive:true});
 railBtns.forEach(b=>b.addEventListener('click',()=>{ stopAuto(); window.scrollTo({top:+b.dataset.t/TOTAL*maxScroll+2,behavior:'smooth'}); }));
-document.getElementById('skipIntro').addEventListener('click',()=>{ stopAuto(); window.scrollTo({top:maxScroll,behavior:'smooth'}); });
 
 /* ───────────────────────── history recorder: true reverse playback ─────────────────────────
    While the story plays forward every ~33 ms of story time is recorded (poses of every moving object,
@@ -1703,7 +1723,7 @@ function resetAll(){
   $('#loginBtn').classList.remove('loading');
   gsap.set('#flash',{opacity:0}); gsap.set('#caption span',{opacity:0});
   document.body.classList.remove('cinema');
-  storyDone=false; storyT=0; tsCur=0; tsPrev=0;
+  storyDone=false; loginLock=false; storyT=0; tsCur=0; tsPrev=0;
   hist.length=0; lastRecT=-1; viewMode='live'; liveT=0; revealT=Infinity; heroSlot=false; sparks.points.visible=dust.points.visible=true; gSparks.points.visible=gDust.points.visible=false;
   if(typeof chapEls!=='undefined') chapEls.forEach((c,i)=>{ if(i>=4){ c.a=1e9; c.b=1e9+1; } });
   scooter.userData.carried=false; sc.body.rotation.z=0;
@@ -1822,9 +1842,13 @@ function impact(){
   I.call(revealLogin,null,3.7);
 }
 function revealLogin(){
-  document.body.classList.remove('cinema'); storyDone=true; revealT=storyT;
+  document.body.classList.remove('cinema'); storyDone=true; revealT=storyT; loginLock=true;
   $('#loginWrap').classList.add('on'); fitLogin(); S.loginOn=true; S.ambientFW=true; cam.sway=1;
-  gsap.fromTo('#loginScene',{opacity:0,scale:.55,y:80,rotateX:-20},{opacity:1,scale:1,y:0,rotateX:0,duration:1.5,ease:'expo.out'});
+  /* no opacity on the ancestors: an element with opacity<1 (or will-change:opacity) blocks backdrop-filter, which made the blur show up late.
+     Only the glass layer and the content fade, so the blur is live from the first frame. */
+  gsap.set('#loginScene',{opacity:1});
+  gsap.fromTo('#loginScene',{scale:.55,y:80,rotateX:-20},{scale:1,y:0,rotateX:0,duration:1.5,ease:'expo.out'});
+  gsap.fromTo('#loginCard .glass-bg,#loginCard .lc-inner',{opacity:0},{opacity:1,duration:.7,ease:'power2.out',clearProps:'opacity'});
 }
 
 /* ───────────────────────── login interactions ───────────────────────── */
@@ -1844,7 +1868,7 @@ function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classLi
   $('#password').autocomplete='off';
   document.querySelectorAll('.field').forEach(f=>f.classList.remove('bad')); fitLogin(); }
 seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.m!==mode) setMode(b.dataset.m); });
-idIn.addEventListener('input',()=>{ idIco.innerHTML=/[a-z@]/i.test(idIn.value)?ICO.mail:ICO.phone; idF.classList.remove('bad'); });
+idIn.addEventListener('input',()=>{ const m=/[a-z@]/i.test(idIn.value); if(m!==idIn._m){ idIn._m=m; idIco.innerHTML=m?ICO.mail:ICO.phone; } idF.classList.remove('bad'); });
 /* ── Accounts (browser-only demo): register saves an account, login checks it ── */
 const USERS_KEY='hp_users';
 const normId=v=>isEmail(v)?v.toLowerCase():v.replace(/[\s\-()]/g,'');
@@ -1913,6 +1937,5 @@ window.scrollTo(0,0); calcMax(true); pRaw=pM=pS=0;
 requestAnimationFrame(()=>{ play(); const l=$('#loader'); l.style.opacity=0; setTimeout(()=>l.remove(),900); });
 }
 </script>
-<button id="skipIntro" type="button">Skip intro · Login ▸</button>
 </body>
 </html>
