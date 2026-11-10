@@ -22,7 +22,9 @@
 } }
 </script>
 <style>
-  html{-webkit-text-size-adjust:100%;scrollbar-width:thin;scrollbar-color:#ff7a2f #05070f;overscroll-behavior-y:none}
+  html{-webkit-text-size-adjust:100%;scrollbar-width:none;-ms-overflow-style:none;overscroll-behavior-y:none}
+  *{scrollbar-width:none}
+  *::-webkit-scrollbar{display:none;width:0;height:0}
   html,body{margin:0;background:#000;overflow-x:hidden;font-family:'Inter',system-ui,sans-serif;color:#fff;-webkit-tap-highlight-color:transparent}
   #app{position:fixed;inset:0;overflow:hidden;transform-origin:50% 50%;will-change:transform}
   #stage{position:absolute;inset:0}
@@ -65,6 +67,22 @@
   #loginWrap::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(8,10,24,.25),rgba(4,5,14,.72));opacity:0;transition:opacity 1.4s ease}
   #loginWrap.on::before{opacity:1}
   #loginWrap.on{pointer-events:auto;visibility:visible}
+  .pw{-webkit-text-security:disc;text-security:disc}.pw.show{-webkit-text-security:none;text-security:none}
+  #loginWrap.kb #loginScene{perspective:none;will-change:auto}
+  #loginWrap.kb #loginFit,#loginWrap.kb .login-card{will-change:auto}
+  #loginWrap.kb .login-card,#loginWrap.kb .field input,#loginWrap.kb .seg{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  #loginWrap.kb{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    /* FIX: the dark dim layer lives on the wrap's own background so it never scrolls away with the content (that scroll caused the bright horizontal band) */
+    background:radial-gradient(ellipse at center,rgba(8,10,24,.25),rgba(4,5,14,.72))}
+  #loginWrap.kb::before{display:none}
+  /* Keyboard open (html.kbd): drop every blur/blend/3D layer so the phone cannot draw a washed-out band over the form */
+  html.kbd *,html.kbd *::before,html.kbd *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;mix-blend-mode:normal!important}
+  html.kbd #app,html.kbd #stage canvas,html.kbd #loginScene,html.kbd .login-card{will-change:auto!important}
+  html.kbd .login-card,html.kbd .lc-inner{transform-style:flat!important;transform:none!important}
+  html.kbd .glare{display:none!important}
+  html.kbd .login-card{isolation:isolate}
+  html.kbd .login-card{background:none!important;box-shadow:0 18px 44px rgba(0,0,0,.4),0 0 60px rgba(255,120,50,.14)!important}
+  html.kbd .field input,html.kbd .seg{background:rgba(10,10,14,.38)!important}
   #loginFit{flex:none;transform-origin:50% 50%}
   #loginScene{position:relative;margin:auto;flex:none;transform-origin:50% 50%;perspective:1100px;opacity:0;will-change:transform,opacity}
   .login-card{position:relative;width:min(410px,92vw);border-radius:30px;padding:34px 30px 26px;transform-style:preserve-3d;will-change:transform;
@@ -82,10 +100,10 @@
   .login-card .sub{margin:6px 0 22px;text-align:center;font-size:13.5px;color:rgba(255,255,255,.72);transform:translateZ(20px)}
   .field{position:relative;display:block;margin-bottom:14px;transform:translateZ(22px)}
   .field>.lead{position:absolute;left:15px;top:15px;display:grid;place-items:center;color:rgba(255,255,255,.6);pointer-events:none}
-  .field input{width:100%;box-sizing:border-box;padding:15px 44px 15px 44px;border-radius:15px;border:1px solid rgba(255,255,255,.22);background:rgba(8,12,28,.38);
+  .field input{width:100%;box-sizing:border-box;padding:15px 44px 15px 44px;border-radius:15px;border:1px solid rgba(255,255,255,.22);background:rgba(10,10,14,.38);
     color:#fff;font:500 14.5px 'Inter';outline:none;transition:border .2s,box-shadow .2s,background .2s}
   .field input::placeholder{color:rgba(255,255,255,.42)}
-  .field input:focus{border-color:rgba(255,160,90,.9);background:rgba(8,12,28,.55);box-shadow:0 0 0 4px rgba(255,140,60,.2),0 8px 24px rgba(0,0,0,.3)}
+  .field input:focus{border-color:rgba(255,160,90,.9);background:rgba(10,10,14,.55);box-shadow:0 0 0 4px rgba(255,140,60,.2),0 8px 24px rgba(0,0,0,.3)}
   .field.bad input{border-color:#ff6b6b;box-shadow:0 0 0 4px rgba(255,90,90,.18)}
   .field .err{display:block;min-height:0;font-size:11.5px;color:#ffb0b0;margin:5px 4px 0;opacity:0;max-height:0;transition:.25s}
   .field.bad .err{opacity:1;max-height:20px}
@@ -155,7 +173,7 @@
   #rail button.done i{background:rgba(255,255,255,.55)}
   #rail button.on{color:#fff}#rail button.on i{background:#ff7a2f;border-color:#ff7a2f;box-shadow:0 0 12px #ff7a2f;transform:scale(1.3)}
   @media(max-width:700px){#rail button span{display:none}#rail{right:10px}}
-  .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 16px;border-radius:15px;background:rgba(8,12,28,.4);border:1px solid rgba(255,255,255,.18);transform:translateZ(22px)}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 16px;border-radius:15px;background:rgba(10,10,14,.4);border:1px solid rgba(255,255,255,.18);transform:translateZ(22px)}
   .seg button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:11px;padding:10px;color:rgba(255,255,255,.7);background:transparent;font:600 13px 'Inter';cursor:pointer;transition:.2s}
   .seg button.on{color:#fff;background:linear-gradient(135deg,#ff9a3d,#ff4a2b);box-shadow:0 6px 18px rgba(255,80,40,.45)}
   body{touch-action:pan-y}
@@ -335,6 +353,45 @@
   }
   .login-card,.glass-bg,.field input,.btn-login,.seg{box-sizing:border-box}
   .login-card{max-width:calc(100vw - 24px)}
+
+  /* Skip intro button: jumps to the end of the story so the login card appears */
+  #skipIntro{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:45;padding:11px 20px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(10,14,24,.72);color:#fff;font:600 14px/1 system-ui,-apple-system,"Segoe UI",sans-serif;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer}
+  body:not(.cinema) #skipIntro{display:none}
+
+  /* ═════════ NO BLUE ANYWHERE: focus rings, tap highlight, autofill, selection, checkbox ═════════ */
+  *,*::before,*::after{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+  input,textarea{-webkit-touch-callout:default}
+  :root{accent-color:#ff7a2f}
+  input,textarea{caret-color:#ffa24d}
+  ::selection{background:rgba(255,140,60,.45);color:#fff}
+  /* remove the browser's default (blue) focus ring after mouse/touch focus */
+  :focus:not(:focus-visible){outline:none}
+  /* text fields: no ring, custom dark-glass + soft orange glow instead */
+  input:focus-visible,textarea:focus-visible{outline:none}
+  .field input:focus,.field input:focus-visible{border-color:rgba(255,160,90,.9);background:rgba(10,10,14,.55);box-shadow:0 0 0 4px rgba(255,140,60,.2),0 8px 24px rgba(0,0,0,.3)}
+  /* keyboard users only (never on tap/click): subtle orange outline instead of blue */
+  button:not([data-m]):focus-visible,a:focus-visible,.row input[type=checkbox]:focus-visible{outline:2px solid rgba(255,162,77,.7);outline-offset:2px}
+  /* checkbox keeps the dark glass look while focused */
+  .row input[type=checkbox]:focus{border-color:rgba(255,160,90,.9);box-shadow:0 0 0 3px rgba(255,140,60,.2)}
+  /* browser autofill paints inputs light blue/yellow: keep them dark glass with white text */
+  input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active{
+    -webkit-text-fill-color:#fff;caret-color:#ffa24d;
+    -webkit-box-shadow:0 0 0 1000px rgba(22,21,28,.96) inset;box-shadow:0 0 0 1000px rgba(22,21,28,.96) inset;
+    transition:background-color 600000s 0s,color 600000s 0s}
+
+  /* ═══ Log in / Register toggle (and other tappable options): never blue when tapped, pressed or focused ═══ */
+  html,body,#app,.seg,.seg button,.row label,.row input[type=checkbox],.btn-login,button,a{-webkit-tap-highlight-color:rgba(0,0,0,0)!important}
+  .seg button,.row label,.btn-login,button{-webkit-appearance:none;appearance:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .seg button,.seg button:hover,.seg button:focus,.seg button:focus-visible,.seg button:active{outline:none!important;outline-color:transparent!important}
+  .seg button::-moz-focus-inner,button::-moz-focus-inner{border:0}
+  .seg button:not(.on),.seg button:not(.on):hover,.seg button:not(.on):focus,.seg button:not(.on):active{background:transparent!important;box-shadow:none!important;color:rgba(255,255,255,.7)}
+  .seg button:not(.on):active{background:rgba(255,255,255,.08)!important}
+  .seg button.on,.seg button.on:hover,.seg button.on:focus,.seg button.on:active{background:linear-gradient(135deg,#ff9a3d,#ff4a2b)!important;color:#fff;box-shadow:0 6px 18px rgba(255,80,40,.45)}
+  .seg button *,.row label *{-webkit-tap-highlight-color:rgba(0,0,0,0)}
+  .seg button::selection,.row label::selection{background:transparent}
+
+  /* No white glow/spot following the finger or mouse: the pointer "glare" highlight is switched off */
+  .glare,.login-card .glare,html.kbd .glare{display:none!important;opacity:0!important;background:none!important;mix-blend-mode:normal!important}
 </style>
 </head>
 <body class="bg-black text-white">
@@ -370,27 +427,27 @@
           <div class="lc-logo"><svg viewBox="0 0 48 40" width="38" height="32" aria-label="Happy Parcel logo" role="img" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 3px rgba(120,30,0,.45))"><path d="M10 8V32"/><path d="M10 20H25"/><path d="M25 8V32"/><path d="M25 8H31.5a6.5 6.5 0 0 1 0 13H25"/></svg></div>
           <h2 id="lcTitle">Welcome to Happy Parcel</h2>
           <p class="sub" id="lcSub">Sign in to track every drop in real time.</p>
-          <form id="loginForm" novalidate>
+          <form id="loginForm" autocomplete="off" novalidate onsubmit="return false">
             <div class="seg" id="seg"><button type="button" class="on" data-m="login">Log in</button><button type="button" data-m="register">Register</button></div>
             <div class="field reg" id="fName">
               <span class="lead"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></span>
-              <input id="fullName" type="text" placeholder="Full name" autocomplete="name">
+              <input id="fullName" type="text" placeholder="Full name" autocomplete="off">
               <span class="err">Please enter your name.</span>
             </div>
             <div class="field" id="fId">
               <span class="lead" id="idIco"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.2 3.5h3.6l1.9 4.7-2.3 1.5a11.2 11.2 0 0 0 5.4 5.4l1.5-2.3 4.7 1.9v3.6a1.9 1.9 0 0 1-2 1.9C10.5 19.6 4.4 13.5 3.3 5.5a1.9 1.9 0 0 1 1.9-2z"/></svg></span>
-              <input id="ident" type="text" inputmode="email" placeholder="Phone number or email" autocomplete="username" autocapitalize="none" spellcheck="false">
+              <input id="ident" type="text" inputmode="email" placeholder="Phone number or email" autocomplete="off" autocapitalize="none" spellcheck="false">
               <span class="err" id="idErr">Enter a valid phone number or email.</span>
             </div>
             <div class="field" id="fPass">
               <span class="lead"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></svg></span>
-              <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+              <input id="password" class="pw" type="text" name="hp_secret" placeholder="Password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
               <button type="button" class="eye" id="eye" aria-label="Show password"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
               <span class="err" id="passErr">Password must be at least 6 characters.</span>
             </div>
             <div class="field reg" id="fPass2">
               <span class="lead"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></svg></span>
-              <input id="password2" type="password" placeholder="Confirm password" autocomplete="new-password">
+              <input id="password2" class="pw" type="text" name="hp_secret2" placeholder="Confirm password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
               <span class="err">Passwords do not match.</span>
             </div>
             <div class="row">
@@ -417,7 +474,7 @@ setTimeout(function(){ var l=document.getElementById('loader'); if(l && !window.
 <div id="err"><div><span style="font-size:30px">⚠</span><p id="errMsg" style="margin-top:12px"></p></div></div>
 
 <script>
-(function(){
+function hpBoot(){
 'use strict';
 var R=window.React, RD=window.ReactDOM, mountEl=document.getElementById('dashRoot'), modalEl=document.getElementById('hpModals');
 if(!R||!RD||!mountEl||!modalEl){ console.warn('[Happy Parcel] React could not be loaded — Driver Dashboard disabled.'); return; }
@@ -678,8 +735,21 @@ function App(){
     toast?e('div',{key:'t'+toast.k,className:'hp-toast',role:'status'},toast.m):null):null;
   return e(Fragment,null,main,RD.createPortal(layer,modalEl));
 }
-RD.createRoot(mountEl).render(e(App));
+class Boundary extends R.Component{
+  constructor(p){ super(p); this.state={err:null}; }
+  static getDerivedStateFromError(er){ return {err:er}; }
+  render(){ if(!this.state.err) return this.props.children;
+    return e('div',{className:'hp-empty',style:{margin:'60px 16px'}},'Dashboard error: '+String((this.state.err&&this.state.err.message)||this.state.err),e('br'),e('br'),e('button',{type:'button',className:'hp-btn',onClick:function(){ try{ localStorage.removeItem(KEY); }catch(x){} location.reload(); }},'Reset and reload')); }
+}
+RD.createRoot(mountEl).render(e(Boundary,null,e(App)));
 window.HPDash={ready:true}; window.__hpReady=true;
+}
+(function(){
+  function go(){ try{ hpBoot(); }catch(x){ console.error(x); window.__hpErr=String(x&&x.message||x); } }
+  if(window.React&&window.ReactDOM){ go(); return; }
+  /* primary CDN blocked: try a second one */
+  var u=['https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js','https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js'], i=0;
+  (function n(){ if(i>=u.length){ go(); return; } var t=document.createElement('script'); t.src=u[i++]; t.onload=n; t.onerror=function(){ window.__hpErr='React could not be downloaded'; }; document.head.appendChild(t); })();
 })();
 </script>
 
@@ -1363,7 +1433,7 @@ function updateFov(){
   const scl=renderer.domElement.height/(2*Math.tan(fov*Math.PI/360)); sparks.mat.uniforms.uScale.value=scl; dust.mat.uniforms.uScale.value=scl; gSparks.mat.uniforms.uScale.value=scl; gDust.mat.uniforms.uScale.value=scl;
 }
 function onResize(){ W=innerWidth; H=innerHeight; renderer.setSize(W,H); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W,H); camera.aspect=W/H; updateFov(); document.body.classList.toggle('compact',W<820||H>W*1.1); }
-let rzT=0; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(onResize,IS_TOUCH?220:60); }); onResize();
+let rzT=0, rzPend=false; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(typing()){ rzPend=true; return; } onResize(); },IS_TOUCH?220:60); }); onResize();
 let qPR=renderer.getPixelRatio(), qAcc=0, qN=0, qWarm=0;
 function adaptQuality(rdt){ if(++qWarm<90) return; qAcc+=rdt; if(++qN>=90){ const avg=qAcc/qN; qAcc=0; qN=0; if(avg>1/42&&qPR>1){ qPR=Math.max(1,qPR-.25); renderer.setPixelRatio(qPR); composer.setPixelRatio(qPR); composer.setSize(W,H); updateFov(); } } }
 
@@ -1482,7 +1552,7 @@ gsap.ticker.add((time)=>{
   storyT=storyDone?Math.min(TOTAL,storyT+dt):storyT+dt; liveT=storyT;
   updateChapters();
   skyMat.uniforms.uTime.value=time;
-  const steps=S.dashHide?0:Math.max(1,Math.ceil(dt/.034)), sdt=steps?dt/steps:0;
+  const steps=frozen()?0:Math.max(1,Math.ceil(dt/.034)), sdt=steps?dt/steps:0;
   for(let si=0;si<steps;si++){ const st=t-dt+sdt*(si+1);
   updatePlane(sdt,st); updateRain(sdt); updateParcels(sdt,st); updateScooter(sdt,st); updateMega(sdt,st);
   sparks.update(sdt); dust.update(sdt); updateRockets(sdt);
@@ -1503,8 +1573,8 @@ gsap.ticker.add((time)=>{
     appTf[0]=dx; appTf[1]=dy; appTf[2]=rt; appTf[3]=k2; app.style.transform=`translate(${dx}px,${dy}px) rotate(${rt}deg) scale(${k2})`; S.wasShake=true; }
   else { appTf[0]=appTf[1]=appTf[2]=0; appTf[3]=1; if(S.wasShake){ app.style.transform=''; S.wasShake=false; } }
   // login tilt
-  if(S.loginOn){ if(!tilt.hover){ tilt.tx=0; tilt.ty=0; } tilt.cx+=(tilt.tx-tilt.cx)*.1; tilt.cy+=(tilt.ty-tilt.cy)*.1; { const tf=`rotateX(${tilt.cx.toFixed(2)}deg) rotateY(${tilt.cy.toFixed(2)}deg)`; if(tf!==tilt.last){ tilt.last=tf; lc.style.transform=tf; } } }
-  if(!S.dashHide){ composer.render(); adaptQuality(rdt); if(viewMode==='live'&&(hist.length===0||storyT-lastRecT>=.033)) recordFrame(); }
+  if(S.loginOn&&(typing()||IS_TOUCH)){ if(lc.style.transform){ lc.style.transform=''; tilt.last=''; } } else if(S.loginOn){ if(!tilt.hover){ tilt.tx=0; tilt.ty=0; } tilt.cx+=(tilt.tx-tilt.cx)*.1; tilt.cy+=(tilt.ty-tilt.cy)*.1; { const tf=`rotateX(${tilt.cx.toFixed(2)}deg) rotateY(${tilt.cy.toFixed(2)}deg)`; if(tf!==tilt.last){ tilt.last=tf; lc.style.transform=tf; } } }
+  if(!frozen()){ composer.render(); adaptQuality(rdt); if(viewMode==='live'&&(hist.length===0||storyT-lastRecT>=.033)) recordFrame(); }
 });
 
 /* ───────────────────────── scroll / swipe input ───────────────────────── */
@@ -1516,12 +1586,19 @@ function updateChapters(){
   let k=-1; railBtns.forEach((b,i)=>{ if(storyT>=+b.dataset.t-.01) k=i; });
   if(k!==railOn){ railOn=k; railBtns.forEach((b,i)=>{ b.classList.toggle('on',i===k); b.classList.toggle('done',i<k); }); }
 }
-let cmW=0, cmH=0; const typing=()=>{ const a=document.activeElement; return !!a&&a.tagName==='INPUT'; };
+let cmW=0, cmH=0; let sH=innerHeight, sW=innerWidth, kbHold=0;
+const kbUp=()=>{ if(innerWidth!==sW){ sW=innerWidth; sH=innerHeight; } else if(innerHeight>sH) sH=innerHeight; return sH-innerHeight>120; };
+const frozen=()=>S.dashHide||(S.loginOn&&typing());
+const typing=()=>{ const a=document.activeElement; return (!!a&&a.tagName==='INPUT')||performance.now()<kbHold||kbUp(); };
+addEventListener('focusin',ev=>{ if(ev.target&&ev.target.tagName==='INPUT'){ $('#loginWrap').classList.add('kb'); document.documentElement.classList.add('kbd'); setTimeout(()=>{ try{ const w=$('#loginWrap'),r=ev.target.getBoundingClientRect(),q=w.getBoundingClientRect(); w.scrollTop+=(r.top+r.height/2)-(q.top+q.height/2); }catch(x){} },350); } });
+addEventListener('focusout',()=>{ kbHold=performance.now()+900; setTimeout(()=>{ const a=document.activeElement; if(a&&a.tagName==='INPUT') return; if(kbUp()) return;
+  $('#loginWrap').classList.remove('kb'); document.documentElement.classList.remove('kbd'); try{ if(!S.dash) scrollTo(0,Math.round(pRaw*maxScroll)); }catch(x){} if(rzPend){ rzPend=false; onResize(); } fitLogin(); },1000); });
 const calcMax=(force)=>{ if(typing()&&!force) return; const w=innerWidth,h=innerHeight; if(force||w!==cmW||Math.abs(h-cmH)>=160){ cmW=w; cmH=h; maxScroll=Math.max(1,document.documentElement.scrollHeight-h); } };
 addEventListener('resize',()=>calcMax(),{passive:true}); calcMax(true);
 const stopAuto=()=>{ auto=false; };
 addEventListener('wheel',stopAuto,{passive:true}); addEventListener('touchstart',stopAuto,{passive:true});
 railBtns.forEach(b=>b.addEventListener('click',()=>{ stopAuto(); window.scrollTo({top:+b.dataset.t/TOTAL*maxScroll+2,behavior:'smooth'}); }));
+document.getElementById('skipIntro').addEventListener('click',()=>{ stopAuto(); window.scrollTo({top:maxScroll,behavior:'smooth'}); });
 
 /* ───────────────────────── history recorder: true reverse playback ─────────────────────────
    While the story plays forward every ~33 ms of story time is recorded (poses of every moving object,
@@ -1756,7 +1833,7 @@ lw.addEventListener('pointermove',e=>{ if(!S.loginOn) return; const r=lc.getBoun
   tilt.hover=true; tilt.tx=clamp(-py*5,-6,6); tilt.ty=clamp(px*6,-8,8); lc.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%'); lc.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%'); },{passive:true});
 lw.addEventListener('pointerleave',()=>{ tilt.hover=false; },{passive:true});
 const ICO={"phone": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5.2 3.5h3.6l1.9 4.7-2.3 1.5a11.2 11.2 0 0 0 5.4 5.4l1.5-2.3 4.7 1.9v3.6a1.9 1.9 0 0 1-2 1.9C10.5 19.6 4.4 13.5 3.3 5.5a1.9 1.9 0 0 1 1.9-2z\"/></svg>", "mail": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2.6\"/><path d=\"M3.8 7.4 12 13.2l8.2-5.8\"/></svg>", "eye": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "off": "<svg class=\"ic\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M3.5 3.5l17 17\"/></svg>"};
-$('#eye').addEventListener('click',()=>{ const i=$('#password'), show=i.type==='password'; i.type=show?'text':'password'; $('#eye').innerHTML=show?ICO.off:ICO.eye; });
+$('#eye').addEventListener('click',()=>{ const i=$('#password'), show=!i.classList.contains('show'); i.classList.toggle('show',show); $('#eye').innerHTML=show?ICO.off:ICO.eye; });
 const idIn=$('#ident'), idF=$('#fId'), idIco=$('#idIco'), seg=$('#seg'), form=$('#loginForm'); let mode='login';
 const isEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), isPhone=v=>/^\+?\d{7,15}$/.test(v.replace(/[\s\-()]/g,''));
 function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
@@ -1764,26 +1841,50 @@ function setMode(m){ mode=m; seg.querySelectorAll('button').forEach(b=>b.classLi
   $('#loginBtn .lbl').textContent=reg?'Create account':'Log in';
   $('#lcTitle').textContent=reg?'Create your account':'Welcome to Happy Parcel';
   $('#lcSub').textContent=reg?'Register with your phone number or email.':'Sign in to track every drop in real time.';
-  $('#password').autocomplete=reg?'new-password':'current-password';
+  $('#password').autocomplete='off';
   document.querySelectorAll('.field').forEach(f=>f.classList.remove('bad')); fitLogin(); }
 seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.m!==mode) setMode(b.dataset.m); });
 idIn.addEventListener('input',()=>{ idIco.innerHTML=/[a-z@]/i.test(idIn.value)?ICO.mail:ICO.phone; idF.classList.remove('bad'); });
-form.addEventListener('submit',e=>{
-  e.preventDefault(); const reg=mode==='register', id=idIn.value.trim(), pw=$('#password').value, nm0=$('#fullName').value.trim();
+/* ── Accounts (browser-only demo): register saves an account, login checks it ── */
+const USERS_KEY='hp_users';
+const normId=v=>isEmail(v)?v.toLowerCase():v.replace(/[\s\-()]/g,'');
+function getUsers(){ try{ return JSON.parse(localStorage.getItem(USERS_KEY))||{}; }catch(x){ return {}; } }
+function saveUsers(u){ try{ localStorage.setItem(USERS_KEY,JSON.stringify(u)); return true; }catch(x){ return false; } }
+async function hashPw(pw,salt){ const d=salt+':'+pw;
+  if(window.crypto&&crypto.subtle){ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  let h=5381; for(const ch of d) h=((h<<5)+h+ch.charCodeAt(0))>>>0; return 'x'+h.toString(16); }
+function fieldError(fieldId,errId,msg){ $('#'+errId).textContent=msg; $('#'+fieldId).classList.add('bad'); lc.classList.remove('shake'); void lc.offsetWidth; lc.classList.add('shake'); }
+form.addEventListener('submit',async e=>{
+  e.preventDefault(); $('#idErr').textContent='Enter a valid phone number or email.'; $('#passErr').textContent='Password must be at least 6 characters.'; const reg=mode==='register', id=idIn.value.trim(), pw=$('#password').value, nm0=$('#fullName').value.trim();
   const okI=isEmail(id)||isPhone(id), okP=pw.length>=6, okN=!reg||nm0.length>=2, okC=!reg||$('#password2').value===pw;
   $('#fName').classList.toggle('bad',!okN); idF.classList.toggle('bad',!okI); $('#fPass').classList.toggle('bad',!okP); $('#fPass2').classList.toggle('bad',!okC);
   if(!(okN&&okI&&okP&&okC)){ lc.classList.remove('shake'); void lc.offsetWidth; lc.classList.add('shake'); return; }
   const b=$('#loginBtn'); b.classList.add('loading'); b.disabled=true;
-  setTimeout(()=>{ b.classList.remove('loading'); b.disabled=false;
-    const pretty=isEmail(id)?id.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'••'+id.replace(/\D/g,'').slice(-4);
-    showDash(reg?nm0:(pretty||'Driver')); },850);
+  try{
+    const key=normId(id), users=getUsers(); let name=null;
+    if(reg){
+      if(users[key]){ fieldError('fId','idErr','This account already exists. Tap Log in instead.'); }
+      else{ const salt=Math.random().toString(36).slice(2); users[key]={name:nm0,salt:salt,hash:await hashPw(pw,salt)};
+        if(saveUsers(users)) name=nm0; else fieldError('fId','idErr','Could not save the account (browser storage is blocked).'); }
+    }else{
+      const u=users[key];
+      if(!u){ /* first login on this device: create the account from these details so nobody is locked out */
+        const salt=Math.random().toString(36).slice(2), nm=isEmail(id)?id.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'Driver';
+        users[key]={name:nm,salt:salt,hash:await hashPw(pw,salt)}; saveUsers(users); name=nm; }
+      else if(await hashPw(pw,u.salt)!==u.hash) fieldError('fPass','passErr','Wrong password. Please try again.');
+      else name=u.name;
+    }
+    await new Promise(r=>setTimeout(r,450));
+    if(name) showDash(name);
+  }catch(err){ toast('Something went wrong. Please try again.'); }
+  finally{ b.classList.remove('loading'); b.disabled=false; }
 });
 /* ───────────────────────── login fit + driver dashboard ───────────────────────── */
 const loginFit=$('#loginFit'), dash=$('#dash');
-function fitLogin(){ const h=lc.offsetHeight||560, w=lc.offsetWidth||410; const k=Math.min(1,(innerHeight-24)/h,(innerWidth-16)/w); loginFit.style.transform=k<1?`scale(${k.toFixed(3)})`:''; }
-{ let ft=0; addEventListener('resize',()=>{ clearTimeout(ft); ft=setTimeout(fitLogin,250); },{passive:true}); }
+function fitLogin(){ const h=lc.offsetHeight||560, w=lc.offsetWidth||410; const vh=typing()?Math.max(innerHeight,sH):innerHeight; const k=Math.min(1,(vh-24)/h,(innerWidth-16)/w); loginFit.style.transform=k<1?`scale(${k.toFixed(3)})`:''; }
+{ let ft=0; addEventListener('resize',()=>{ clearTimeout(ft); ft=setTimeout(()=>{ if(!typing()) fitLogin(); },250); },{passive:true}); }
 function showDash(name){
-  if(!window.__hpReady){ toast('Dashboard could not load (React CDN blocked). Check your connection and reload.'); return; }
+  if(!window.__hpReady){ toast('Loading dashboard…'); let n=0; const iv=setInterval(()=>{ if(window.__hpReady){ clearInterval(iv); showDash(name); } else if(++n>40){ clearInterval(iv); toast('Dashboard could not load. Check your internet and reload.'+(window.__hpErr?' ('+window.__hpErr+')':'')); } },250); return; }
   S.dash=true; document.documentElement.classList.add('dash-on');
   lw.style.transition='opacity .45s ease'; lw.style.opacity=0;                       // login fades out
   setTimeout(()=>{ dash.classList.add('on'); dash.scrollTop=0; window.dispatchEvent(new CustomEvent('hp-open',{detail:{name}})); },300);   // dashboard fades in right behind it
@@ -1793,7 +1894,7 @@ function hideDash(){
   dash.classList.remove('on'); window.dispatchEvent(new Event('hp-close'));
   setTimeout(()=>{ S.dash=false; S.dashHide=false; document.documentElement.classList.remove('dash-on');
     lw.classList.add('on'); lw.style.transition='none'; lw.style.opacity=0; void lw.offsetWidth; lw.style.transition='opacity .5s ease'; lw.style.opacity=1;
-    $('#loginForm').reset(); fitLogin(); },420);
+    $('#loginForm').reset(); document.querySelectorAll('.field').forEach(f=>f.classList.remove('bad')); if(mode!=='login') setMode('login'); fitLogin(); },420);
 }
 window.HPApp={signOut:hideDash};
 $('#forgot').addEventListener('click',e=>{ e.preventDefault(); toast('Demo only — password reset is not connected.'); });
@@ -1812,5 +1913,6 @@ window.scrollTo(0,0); calcMax(true); pRaw=pM=pS=0;
 requestAnimationFrame(()=>{ play(); const l=$('#loader'); l.style.opacity=0; setTimeout(()=>l.remove(),900); });
 }
 </script>
+<button id="skipIntro" type="button">Skip intro · Login ▸</button>
 </body>
 </html>
